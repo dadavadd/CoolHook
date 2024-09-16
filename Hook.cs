@@ -10,7 +10,7 @@ namespace CoolHook
     /// <summary>
     /// Represents a single method hook.
     /// </summary>
-    public unsafe class Hook
+    public class Hook
     {
         public MethodBase BaseMethod { get; set; } // The method being hooked
         public IntPtr BaseMethodPointer { get; set; } // Pointer to the base method

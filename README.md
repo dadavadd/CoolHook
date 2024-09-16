@@ -1,36 +1,50 @@
-# CoolHook
+# ✔CoolHook
 
 `CoolHook` is a library for managing method hooks in .NET applications. This library allows you to dynamically hook methods at runtime and replace them with custom implementations.
 
-## Features
+## Features 🌟
 
-- **Create Hooks**: Dynamically hook methods at runtime.
-- **Remove Hooks**: Easily remove hooks and restore original methods.
-- **Manage Hooks**: Retrieve and remove hooks by name or method.
+- **Create Hooks**: Dynamically hook methods at runtime. 🔄
+- **Remove Hooks**: Easily remove hooks and restore original methods. ❌
+- **Manage Hooks**: Retrieve and remove hooks by name or method. 🗂️
 
-## Installation
+## Installation 📦
 
-To use `CoolHook`, add the library to your project via NuGet or by referencing the compiled assembly.
+To use `CoolHook`, add the library to your project via NuGet or by referencing the compiled assembly. 🔧
 
-## Usage
+## Usage 🛠️
 
-### HookManager
+### Csproj Configure
+
+Before adding the source code, you need to configure the `csproj` file. Just add this XML code there:
+
+```xml
+	<PropertyGroup Condition=" '$(Platform)' == 'x64' ">
+		<DefineConstants>WIN64;$(DefineConstants)</DefineConstants>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition=" '$(Platform)' == 'x86' ">
+		<DefineConstants>WIN32;$(DefineConstants)</DefineConstants>
+	</PropertyGroup>
+```
+
+### HookManager🔍
 
 The `HookManager` class manages the creation, removal, and retrieval of method hooks.
 
 #### Properties
 
-- **`EnabledHooks`**: Returns the number of currently enabled hooks.
+- **`EnabledHooks`**: Returns the number of currently enabled hooks.📈
 
 #### Methods
 
-- **`CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null)`**: Creates a new hook for the specified methods. Optionally, associate a name with the hook.
-- **`RemoveAllHooks()`**: Removes all hooks and restores original methods.
-- **`RemoveHook(Hook hook)`**: Removes a specific hook.
-- **`GetHookByName(string name)`**: Retrieves a hook by its name.
-- **`RemoveHookByName(string name)`**: Removes a hook by its name.
-- **`HasHook(MethodBase methodBase)`**: Checks if a hook exists for the specified method.
-- **`GetHooksForMethodType(Type methodType)`**: Retrieves all hooks associated with a specific method type.
+- **`CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null)`**: Creates a new hook for the specified methods. Optionally, associate a name with the hook.✨
+- **`RemoveAllHooks()`**: Removes all hooks and restores original methods.🚫
+- **`RemoveHook(Hook hook)`**: Removes a specific hook.🔍
+- **`GetHookByName(string name)`**: Retrieves a hook by its name.📜
+- **`RemoveHookByName(string name)`**: Removes a hook by its name.❌
+- **`HasHook(MethodBase methodBase)`**: Checks if a hook exists for the specified method.✔️
+- **`GetHooksForMethodType(Type methodType)`**: Retrieves all hooks associated with a specific method type.📂
 
 ### Hook
 
@@ -38,23 +52,23 @@ The `Hook` class represents a single method hook.
 
 #### Properties
 
-- **`BaseMethod`**: The method being hooked.
-- **`BaseMethodPointer`**: Pointer to the base method.
-- **`HookedMethodPointer`**: Pointer to the hooked method.
+- **`BaseMethod`**: The method being hooked.🔗
+- **`BaseMethodPointer`**: Pointer to the base method.🧭
+- **`HookedMethodPointer`**: Pointer to the hooked method.🧭
 
 #### Constructors
 
-- **`Hook(MethodBase baseMethod, MethodBase hookedMethod)`**: Creates a hook for the specified methods.
-- **`Hook((MethodBase, MethodBase) methodsToHook)`**: Creates a hook from a tuple of methods.
-- **`Hook(Type baseType, string baseMethodName, Type hookedType, string hookedMethodName, BindingFlags bindingFlags)`**: Creates a hook using method names and types.
-- **`Hook(IntPtr baseMethodPtr, IntPtr hookedMethodPtr)`**: Creates a hook using method pointers.
+- **`Hook(MethodBase baseMethod, MethodBase hookedMethod)`**: Creates a hook for the specified methods.🔨
+- **`Hook((MethodBase, MethodBase) methodsToHook)`**: Creates a hook from a tuple of methods.🧩
+- **`Hook(Type baseType, string baseMethodName, Type hookedType, string hookedMethodName, BindingFlags bindingFlags)`**: Creates a hook using method names and types.🔧
+- **`Hook(IntPtr baseMethodPtr, IntPtr hookedMethodPtr)`**: Creates a hook using method pointers.📌
 
 #### Methods
 
-- **`SetHook()`**: Applies the hook to the base method.
-- **`RemoveHook()`**: Removes the hook and restores the original method.
+- **`SetHook()`**: Applies the hook to the base method.✅
+- **`RemoveHook()`**: Removes the hook and restores the original method.🚫
 
-## Example
+## Example💡
 
 Here is an example demonstrating how to use `CoolHook`:
 

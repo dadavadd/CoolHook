@@ -7,6 +7,21 @@
     <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<RepositoryUrl>https://github.com/dadavadd/CoolHook</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md">
+			<Pack>true</Pack>
+			<PackagePath>""</PackagePath>
+		</None>
+		<None Include="LICENSE.txt">
+			<Pack>true</Pack>
+			<PackagePath>""</PackagePath>
+		</None>
+	</ItemGroup>
+
 
 	<PropertyGroup Condition=" '$(Platform)' == 'x64' ">
 		<DefineConstants>WIN64;$(DefineConstants)</DefineConstants>
