@@ -1,4 +1,4 @@
-# CoolHook
+# ✔CoolHook
 
 `CoolHook` is a library for managing method hooks in .NET applications. This library allows you to dynamically hook methods at runtime and replace them with custom implementations.
 
