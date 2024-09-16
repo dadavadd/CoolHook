@@ -101,6 +101,15 @@ namespace CoolHook
         }
 
         /// <summary>
+        /// Check if a hook exists for the specified method.
+        /// </summary>
+        /// <param name="methodBasePtr">The method pointer to check</param>
+        /// <returns>True if a hook exists for the method; otherwise, false.</returns>
+
+        public bool HasHook(IntPtr methodBasePtr)
+            => _hooks.Exists(h => h.BaseMethodPointer == methodBasePtr);
+
+        /// <summary>
         /// Retrieves all hooks for methods of a specific type.
         /// </summary>
         /// <param name="methodType">The type of methods to retrieve hooks for.</param>

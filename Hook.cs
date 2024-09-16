@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Memory;
+
 using static Windows.Win32.PInvoke;
 
 namespace CoolHook
@@ -10,11 +11,11 @@ namespace CoolHook
     /// <summary>
     /// Represents a single method hook.
     /// </summary>
-    public class Hook
+    public unsafe class Hook
     {
         public MethodBase BaseMethod { get; set; } // The method being hooked
         public IntPtr BaseMethodPointer { get; set; } // Pointer to the base method
-        public IntPtr HookedMethodPointer { get; set; } // Pointer to the hooked method
+        public IntPtr HookMethodPointer { get; set; } // Pointer to the hooked method
 
         private byte[] _origInstr; // Stores the original instructions of the base method
 
@@ -51,7 +52,7 @@ namespace CoolHook
             RuntimeHelpers.PrepareMethod(hookedMethod.MethodHandle);
 
             BaseMethodPointer = baseMethod.MethodHandle.GetFunctionPointer();
-            HookedMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
+            HookMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -74,7 +75,7 @@ namespace CoolHook
             RuntimeHelpers.PrepareMethod(methodsToHook.Item2.MethodHandle);
 
             BaseMethodPointer = methodsToHook.Item1.MethodHandle.GetFunctionPointer();
-            HookedMethodPointer = methodsToHook.Item2.MethodHandle.GetFunctionPointer();
+            HookMethodPointer = methodsToHook.Item2.MethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -102,7 +103,7 @@ namespace CoolHook
             RuntimeHelpers.PrepareMethod(hookedMethod.MethodHandle);
 
             BaseMethodPointer = baseMethod.MethodHandle.GetFunctionPointer();
-            HookedMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
+            HookMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -125,7 +126,7 @@ namespace CoolHook
             BaseMethod = MethodBase.GetMethodFromHandle(handle);
 
             BaseMethodPointer = baseMethodPtr;
-            HookedMethodPointer = hookedMethodPtr;
+            HookMethodPointer = hookedMethodPtr;
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -142,9 +143,9 @@ namespace CoolHook
             var hookInstructions = (byte[])_hookInstr.Clone();
 
 #if WIN64
-            Buffer.BlockCopy(BitConverter.GetBytes(HookedMethodPointer.ToInt64()), 0, hookInstructions, 2, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(HookMethodPointer.ToInt64()), 0, hookInstructions, 2, 8);
 #else
-            Buffer.BlockCopy(BitConverter.GetBytes(HookedMethodPointer.ToInt32()), 0, hookInstructions, 1, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(HookMethodPointer.ToInt32()), 0, hookInstructions, 1, 4);
 #endif
 
             VirtualProtect(BaseMethodPointer.ToPointer(), (nuint)hookInstructions.Length, PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE, out var oldProtect);
@@ -161,6 +162,14 @@ namespace CoolHook
             Marshal.Copy(_origInstr, 0, BaseMethodPointer, _origInstr.Length);
             VirtualProtect(BaseMethodPointer.ToPointer(), (nuint)_origInstr.Length, oldProtect, out _);
         }
+
+        /// <summary>
+        /// Overriding the ToString() method.
+        /// </summary>
+        /// <returns>Show the addresses of the original methods and hooked ones as string type</returns>
+        public override string ToString()
+            => $"Original method pointer: {BaseMethodPointer:X}\n" +
+                $"Hook method pointer: {HookMethodPointer:X}";
     }
 #pragma warning restore CA1416 // Checks for platform compatibility
 }
