@@ -14,9 +14,7 @@ To use AobScan in your project, clone the repository and add the necessary refer
 
 ```sh
 git clone https://github.com/dadavadd/CoolHook.git
-``` 
-
-## Usage 🛠️
+```
 
 ### Csproj Configure
 
@@ -31,6 +29,17 @@ Before adding the source code, you need to configure the `csproj` file. Just add
 		<DefineConstants>WIN32;$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
 ```
+
+### Installing Code Generator
+You will also need to install the Microsoft.Windows.CsWin32 code generator package from NuGet to generate the necessary Windows API bindings.
+
+To install the package, run the following command in your project directory:
+```sh
+dotnet add package Microsoft.Windows.CsWin32
+```
+This package provides the necessary APIs for interacting with Windows system functions and is required for the proper functioning of memory reading and writing operations in the library.
+
+## Usage 🛠️
 
 ### AobScan🎉
 
