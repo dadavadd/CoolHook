@@ -20,6 +20,7 @@ namespace ProcessHandler
             if (processName == null)
                 throw new ArgumentNullException("Process Name is null");
 
+
             ProcessName = processName;
             ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, true, GetProcessID());
         }
