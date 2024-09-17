@@ -32,6 +32,17 @@ Before adding the source code, you need to configure the `csproj` file. Just add
 	</PropertyGroup>
 ```
 
+### AobScan🎉
+
+AobScan is a library for scanning memory regions in processes to find byte patterns. It supports different scanning methods using advanced SIMD instructions when available. This library is useful for tasks such as process memory analysis, debugging, and more.😎
+
+For detailed information about the functionality and usage of the AobScan library, refer to the following documents:
+
+- [How AobScan Works](docs/aobscan.md): An overview of the AobScan library, including how it performs memory scans and the different scanning methods available.🙌
+- [Reading Memory](docs/reading.md): Detailed documentation on how to read memory from a process using the library.✨
+- [Writing Memory](docs/writing.md): Detailed documentation on how to write to memory in a process using the library.🍕
+
+
 ### HookManager🔍
 
 The `HookManager` class manages the creation, removal, and retrieval of method hooks.
@@ -126,15 +137,3 @@ class Program
         Console.WriteLine("It's hook method!");
     }
 ```
-
-# AobScan
-
-AobScan is a library for scanning memory regions in processes to find byte patterns. It supports different scanning methods using advanced SIMD instructions when available. This library is useful for tasks such as process memory analysis, debugging, and more.
-
-## Documentation
-
-For detailed information about the functionality and usage of the AobScan library, refer to the following documents:
-
-- [How AobScan Works](docs/aobscan.md): An overview of the AobScan library, including how it performs memory scans and the different scanning methods available.
-- [Reading Memory](docs/reading.md): Detailed documentation on how to read memory from a process using the library.
-- [Writing Memory](docs/writing.md): Detailed documentation on how to write to memory in a process using the library.
