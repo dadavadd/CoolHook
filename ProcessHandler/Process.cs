@@ -9,7 +9,7 @@ namespace ProcessHandler
     /// <summary>
     /// Represents a process in the system and provides functionality to interact with it.
     /// </summary>
-    internal class Process
+    public class Process
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Process"/> class with the specified process name.
@@ -17,8 +17,11 @@ namespace ProcessHandler
         /// <param name="processName">The name of the process to interact with. The name should not include the ".exe" extension.</param>
         public Process(string processName)
         {
+            if (processName == null)
+                throw new ArgumentNullException("Process Name is null");
+
             ProcessName = processName;
-            ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, false, GetProcessID());
+            ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, true, GetProcessID());
         }
 
         /// <summary>
@@ -26,7 +29,12 @@ namespace ProcessHandler
         /// </summary>
         /// <param name="processID">ID of the process to interact with.</param>
         public Process(int processID)
-            => ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, false, (uint)processID);
+        {
+            if (processID == 0)
+                throw new ArgumentException("Process ID is null.");
+
+            ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, true, (uint)processID);
+        }
 
         /// <summary>
         /// Gets the name of the process.
@@ -45,7 +53,12 @@ namespace ProcessHandler
         private uint GetProcessID()
         {
             string procName = ProcessName.Replace(".exe", "");
-            return (uint)System.Diagnostics.Process.GetProcessesByName(procName)[0].Id;
+            var process = System.Diagnostics.Process.GetProcessesByName(procName)[0];
+
+            if (process == null)
+                throw new NullReferenceException("Process class is null");
+
+            return (uint)process.Id;
         }
     }
 }

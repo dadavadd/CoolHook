@@ -8,7 +8,7 @@ namespace Memory
     /// <summary>
     /// Provides extension methods for writing memory to a process.
     /// </summary>
-    internal unsafe static class MemoryPatcherExtensions
+    public unsafe static class MemoryPatcherExtensions
     {
         /// <summary>
         /// Writes a value of type <typeparamref name="T"/> to the specified memory address in the given process.

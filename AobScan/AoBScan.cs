@@ -13,7 +13,7 @@ namespace AobScan
     /// <summary>
     /// Performs an array of bytes (AoB) scan within a process's memory.
     /// </summary>
-    internal unsafe class AoBScan
+    public unsafe class AoBScan
     {
         private SafeHandle _processHandle;
         private IScanMethod _scanMethod;

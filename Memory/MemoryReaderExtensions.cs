@@ -12,7 +12,7 @@ namespace Memory
     /// <summary>
     /// Provides extension methods for reading memory from a process.
     /// </summary>
-    internal static unsafe class MemoryReaderExtensions
+    public static unsafe class MemoryReaderExtensions
     {
         /// <summary>
         /// Reads a value of type <typeparamref name="T"/> from the specified memory address in the given process.

@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a memory region within a process.
     /// </summary>
-    class MemoryRegion
+    internal class MemoryRegion
     {
         /// <summary>
         /// Gets the base address of the memory region.
