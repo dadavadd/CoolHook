@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace CoolHook
+namespace CoolHook.Hooking
 {
     /// <summary>
     /// Manages the creation, removal, and retrieval of method hooks.
@@ -106,7 +106,7 @@ namespace CoolHook
         /// <param name="methodBasePtr">The method pointer to check</param>
         /// <returns>True if a hook exists for the method; otherwise, false.</returns>
 
-        public bool HasHook(IntPtr methodBasePtr)
+        public bool HasHook(nint methodBasePtr)
             => _hooks.Exists(h => h.BaseMethodPointer == methodBasePtr);
 
         /// <summary>

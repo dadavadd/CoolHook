@@ -13,9 +13,9 @@ namespace CoolHook.Hooking
     /// </summary>
     public unsafe class Hook
     {
-        public MethodBase BaseMethod { get; set; } // The method being hooked
-        public nint BaseMethodPointer { get; set; } // Pointer to the base method
-        public nint HookMethodPointer { get; set; } // Pointer to the hooked method
+        public MethodBase BaseMethod { get; internal set; } // The method being hooked
+        public IntPtr BaseMethodPointer { get; internal set; } // Pointer to the base method
+        public IntPtr HookMethodPointer { get; internal set; } // Pointer to the hooked method
 
         private byte[] _origInstr; // Stores the original instructions of the base method
 
