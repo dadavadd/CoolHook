@@ -1,11 +1,9 @@
 ﻿using Windows.Win32.System.Threading;
-using Windows.Win32.Foundation;
-
-
-using static Windows.Win32.PInvoke;
 using System.Runtime.InteropServices;
 
+using static Windows.Win32.PInvoke;
 
+#pragma warning disable CA1416 // Checks for platform compatibility
 namespace ProcessHandler
 {
     /// <summary>
@@ -22,6 +20,13 @@ namespace ProcessHandler
             ProcessName = processName;
             ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, false, GetProcessID());
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Process"/> class using the process ID.
+        /// </summary>
+        /// <param name="processID">ID of the process to interact with.</param>
+        public Process(int processID)
+            => ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, false, (uint)processID);
 
         /// <summary>
         /// Gets the name of the process.
@@ -43,5 +48,4 @@ namespace ProcessHandler
             return (uint)System.Diagnostics.Process.GetProcessesByName(procName)[0].Id;
         }
     }
-
 }

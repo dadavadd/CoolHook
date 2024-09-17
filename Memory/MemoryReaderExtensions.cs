@@ -5,6 +5,8 @@ using Windows.Win32.Foundation;
 
 using static Windows.Win32.PInvoke;
 
+#pragma warning disable CA1416 // Checks for platform compatibility
+
 namespace Memory
 {
     /// <summary>
@@ -34,7 +36,7 @@ namespace Memory
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             try
             {
-                IntPtr bufferPtr = handle.AddrOfPinnedObject();
+                var bufferPtr = handle.AddrOfPinnedObject();
                 return (T)Marshal.PtrToStructure(bufferPtr, typeof(T));
             }
             finally

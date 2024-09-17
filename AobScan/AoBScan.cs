@@ -7,6 +7,7 @@ using Windows.Win32.System.Memory;
 
 using static Windows.Win32.PInvoke;
 
+#pragma warning disable CA1416 // Checks for platform compatibility
 namespace AobScan
 {
     /// <summary>
@@ -73,10 +74,9 @@ namespace AobScan
                         if (ReadProcessMemory(_processHandle, region.BaseAddress.ToPointer(), ptr, (uint)region.RegionSize, &bytesRead))
                         {
                             var matches = ScanRegion(buffer, aobPattern, mask);
+
                             foreach (var offset in matches)
-                            {
                                 results.Add(region.BaseAddress + offset);
-                            }
                         }
                     }
                 });
@@ -131,7 +131,7 @@ namespace AobScan
                 if (memInfo.State == VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT && memInfo.Protect.HasFlag(PAGE_PROTECTION_FLAGS.PAGE_READWRITE))
                     regions.Add(new MemoryRegion(new IntPtr(memInfo.BaseAddress), (int)memInfo.RegionSize));
 
-                address = new IntPtr(new IntPtr(memInfo.BaseAddress).ToInt64() + (long)memInfo.RegionSize);
+                address = (IntPtr)memInfo.BaseAddress + (IntPtr)memInfo.RegionSize;
             }
 
             return regions;

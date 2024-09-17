@@ -2,6 +2,7 @@
 using ProcessHandler;
 using static Windows.Win32.PInvoke;
 
+#pragma warning disable CA1416 // Checks for platform compatibility
 namespace Memory
 {
     /// <summary>
