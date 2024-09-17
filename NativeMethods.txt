@@ -1,1 +1,6 @@
 VirtualProtect
+OpenProcess
+WriteProcessMemory
+ReadProcessMemory
+MEMORY_BASIC_INFORMATION
+VirtualQueryEx
