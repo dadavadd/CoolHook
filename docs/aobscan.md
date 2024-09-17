@@ -31,3 +31,4 @@ var aobScanner = new AoBScan(process, scanMethod);
 
 var pattern = "48 89 5C 24 ?? 57 48 83 EC 20 48 8B F9 48 8B 07";
 var results = await aobScanner.AobScan(pattern);
+```
