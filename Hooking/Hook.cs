@@ -5,7 +5,7 @@ using Windows.Win32.System.Memory;
 
 using static Windows.Win32.PInvoke;
 
-namespace CoolHook
+namespace CoolHook.Hooking
 {
 #pragma warning disable CA1416 // Checks for platform compatibility
     /// <summary>
@@ -14,8 +14,8 @@ namespace CoolHook
     public unsafe class Hook
     {
         public MethodBase BaseMethod { get; set; } // The method being hooked
-        public IntPtr BaseMethodPointer { get; set; } // Pointer to the base method
-        public IntPtr HookMethodPointer { get; set; } // Pointer to the hooked method
+        public nint BaseMethodPointer { get; set; } // Pointer to the base method
+        public nint HookMethodPointer { get; set; } // Pointer to the hooked method
 
         private byte[] _origInstr; // Stores the original instructions of the base method
 
@@ -48,11 +48,14 @@ namespace CoolHook
 
             BaseMethod = baseMethod;
 
-            RuntimeHelpers.PrepareMethod(baseMethod.MethodHandle);
-            RuntimeHelpers.PrepareMethod(hookedMethod.MethodHandle);
+            var baseMethodHandle = baseMethod.MethodHandle;
+            var hookedMethodHandle = hookedMethod.MethodHandle; 
 
-            BaseMethodPointer = baseMethod.MethodHandle.GetFunctionPointer();
-            HookMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
+            RuntimeHelpers.PrepareMethod(baseMethodHandle);
+            RuntimeHelpers.PrepareMethod(hookedMethodHandle);
+
+            BaseMethodPointer = baseMethodHandle.GetFunctionPointer();
+            HookMethodPointer = hookedMethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -71,11 +74,14 @@ namespace CoolHook
 
             BaseMethod = methodsToHook.Item1;
 
-            RuntimeHelpers.PrepareMethod(methodsToHook.Item1.MethodHandle);
-            RuntimeHelpers.PrepareMethod(methodsToHook.Item2.MethodHandle);
+            var baseMethodHandle = methodsToHook.Item1.MethodHandle;
+            var hookedMethodHandle = methodsToHook.Item2.MethodHandle;
 
-            BaseMethodPointer = methodsToHook.Item1.MethodHandle.GetFunctionPointer();
-            HookMethodPointer = methodsToHook.Item2.MethodHandle.GetFunctionPointer();
+            RuntimeHelpers.PrepareMethod(baseMethodHandle);
+            RuntimeHelpers.PrepareMethod(hookedMethodHandle);
+
+            BaseMethodPointer = baseMethodHandle.GetFunctionPointer();
+            HookMethodPointer = hookedMethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -99,11 +105,14 @@ namespace CoolHook
             if (baseMethod == null || hookedMethod == null)
                 throw new ArgumentException("One or both methods were not found with the specified binding flags.");
 
-            RuntimeHelpers.PrepareMethod(baseMethod.MethodHandle);
-            RuntimeHelpers.PrepareMethod(hookedMethod.MethodHandle);
+            var baseMethodHandle = baseMethod.MethodHandle;
+            var hookedMethodHandle = hookedMethod.MethodHandle;
 
-            BaseMethodPointer = baseMethod.MethodHandle.GetFunctionPointer();
-            HookMethodPointer = hookedMethod.MethodHandle.GetFunctionPointer();
+            RuntimeHelpers.PrepareMethod(baseMethodHandle);
+            RuntimeHelpers.PrepareMethod(hookedMethodHandle);
+
+            BaseMethodPointer = baseMethodHandle.GetFunctionPointer();
+            HookMethodPointer = hookedMethodHandle.GetFunctionPointer();
 
             _origInstr = new byte[_hookInstr.Length];
 
@@ -121,9 +130,7 @@ namespace CoolHook
             if (baseMethodPtr == IntPtr.Zero || hookedMethodPtr == IntPtr.Zero)
                 throw new ArgumentException("One of the methods was IntPtr.Zero.");
 
-            var handle = RuntimeMethodHandle.FromIntPtr(baseMethodPtr);
-
-            BaseMethod = MethodBase.GetMethodFromHandle(handle);
+            BaseMethod = MethodBase.GetMethodFromHandle(RuntimeMethodHandle.FromIntPtr(baseMethodPtr));
 
             BaseMethodPointer = baseMethodPtr;
             HookMethodPointer = hookedMethodPtr;
