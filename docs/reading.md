@@ -13,3 +13,12 @@ Example:
 ```csharp
 var value = process.ReadMemory<int>(/*IntPtr*/address);
 Console.WriteLine(value);
+```
+
+# Reading Strings
+
+To read a null-terminated `string` from memory, use the `ReadString` extension method. This method retrieves a `string` of the specified length from the memory address.
+```csharp
+var str = process.ReadString(readAddress, 256);
+Console.WriteLine(str);
+```
