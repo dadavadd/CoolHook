@@ -25,7 +25,7 @@ To use the AobScan library, you need to create an instance of `AoBScan` and prov
 Example:
 
 ```csharp
-var process = Process.GetProcessById(1234); // Replace with the actual process ID
+var process = new ProcessHandler.Process("processname.exe");
 var scanMethod = new Avx2ScanMethod(); // Or Sse2ScanMethod, FallbackScanMethod
 var aobScanner = new AoBScan(process, scanMethod);
 
