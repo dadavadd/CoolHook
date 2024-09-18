@@ -7,7 +7,7 @@ namespace AobScan.ScanMethods
     /// <summary>
     /// Provides scanning functionality using AVX2 SIMD instructions for pattern matching.
     /// </summary>
-    internal unsafe class Avx2ScanMethod : IScanMethod
+    public unsafe class Avx2ScanMethod : IScanMethod
     {
         /// <summary>
         /// Scans a memory buffer for a pattern using AVX2 instructions.

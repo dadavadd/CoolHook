@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the interface for scanning methods used to find byte patterns in memory.
     /// </summary>
-    internal interface IScanMethod
+    public interface IScanMethod
     {
         /// <summary>
         /// Scans a memory buffer for a pattern.

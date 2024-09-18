@@ -3,7 +3,7 @@
     /// <summary>
     /// Provides a fallback scanning method for pattern matching when no advanced SIMD instructions are available.
     /// </summary>
-    internal class FallbackScanMethod : IScanMethod
+    public class FallbackScanMethod : IScanMethod
     {
         /// <summary>
         /// Scans a memory buffer for a pattern using a basic scanning method.

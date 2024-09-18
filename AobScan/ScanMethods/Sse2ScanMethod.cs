@@ -7,7 +7,7 @@ namespace AobScan.ScanMethods
     /// <summary>
     /// Provides scanning functionality using SSE2 SIMD instructions for pattern matching.
     /// </summary>
-    internal unsafe class Sse2ScanMethod : IScanMethod
+    public unsafe class Sse2ScanMethod : IScanMethod
     {
         /// <summary>
         /// Scans a memory buffer for a pattern using SSE2 instructions.
