@@ -26,8 +26,16 @@ Example:
 
 ```csharp
 var process = new ProcessHandler.Process("processname.exe");
-var scanMethod = new Avx2ScanMethod(); // Or Sse2ScanMethod, FallbackScanMethod
+var scanMethod = new Avx2ScanMethod(); // Or Sse2ScanMethod, FallbackScanMethod, or none.
 var aobScanner = new AoBScan(process, scanMethod);
+
+var pattern = "48 89 5C 24 ?? 57 48 83 EC 20 48 8B F9 48 8B 07";
+var results = await aobScanner.AobScan(pattern);
+```
+
+```csharp
+var scanMethod = new Avx2ScanMethod(); // Or Sse2ScanMethod, FallbackScanMethod
+var aobScanner = new AoBScan("processname.exe", scanMethod); // instead of "processname" you can write process ID parameter.
 
 var pattern = "48 89 5C 24 ?? 57 48 83 EC 20 48 8B F9 48 8B 07";
 var results = await aobScanner.AobScan(pattern);
