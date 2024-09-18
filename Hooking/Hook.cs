@@ -68,24 +68,8 @@ namespace CoolHook.Hooking
         /// <param name="methodsToHook">Tuple containing the base and hooked methods.</param>
         /// <exception cref="ArgumentException">Thrown when either method is null.</exception>
         public Hook((MethodBase, MethodBase) methodsToHook)
+            : this(methodsToHook.Item1, methodsToHook.Item2)
         {
-            if (methodsToHook.Item1 == null || methodsToHook.Item2 == null)
-                throw new ArgumentException("One of the methods was null.");
-
-            BaseMethod = methodsToHook.Item1;
-
-            var baseMethodHandle = methodsToHook.Item1.MethodHandle;
-            var hookedMethodHandle = methodsToHook.Item2.MethodHandle;
-
-            RuntimeHelpers.PrepareMethod(baseMethodHandle);
-            RuntimeHelpers.PrepareMethod(hookedMethodHandle);
-
-            BaseMethodPointer = baseMethodHandle.GetFunctionPointer();
-            HookMethodPointer = hookedMethodHandle.GetFunctionPointer();
-
-            _origInstr = new byte[_hookInstr.Length];
-
-            SetHook();
         }
 
         /// <summary>
@@ -98,25 +82,11 @@ namespace CoolHook.Hooking
         /// <param name="bindingFlags">Binding flags used to find the methods.</param>
         /// <exception cref="ArgumentException">Thrown when methods are not found with the specified binding flags.</exception>
         public Hook(Type baseType, string baseMethodName, Type hookedType, string hookedMethodName, BindingFlags bindingFlags)
+            : this(
+                baseType.GetMethod(baseMethodName, bindingFlags) ?? throw new ArgumentException("Base method not found with the specified binding flags."),
+                hookedType.GetMethod(hookedMethodName, bindingFlags) ?? throw new ArgumentException("Hooked method not found with the specified binding flags.")
+            )
         {
-            var baseMethod = baseType.GetMethod(baseMethodName, bindingFlags);
-            var hookedMethod = hookedType.GetMethod(hookedMethodName, bindingFlags);
-
-            if (baseMethod == null || hookedMethod == null)
-                throw new ArgumentException("One or both methods were not found with the specified binding flags.");
-
-            var baseMethodHandle = baseMethod.MethodHandle;
-            var hookedMethodHandle = hookedMethod.MethodHandle;
-
-            RuntimeHelpers.PrepareMethod(baseMethodHandle);
-            RuntimeHelpers.PrepareMethod(hookedMethodHandle);
-
-            BaseMethodPointer = baseMethodHandle.GetFunctionPointer();
-            HookMethodPointer = hookedMethodHandle.GetFunctionPointer();
-
-            _origInstr = new byte[_hookInstr.Length];
-
-            SetHook();
         }
 
         /// <summary>

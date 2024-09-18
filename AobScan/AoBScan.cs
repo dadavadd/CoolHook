@@ -34,10 +34,8 @@ namespace AobScan
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
         /// <param name="process">The process to scan.</param>
-        public AoBScan(Process process)
+        public AoBScan(Process process) : this(process, GetScanMethod())
         {
-            ProcessHandle = process.ProcessHandle;
-            _scanMethod = GetScanMethod();
         }
 
         /// <summary>
@@ -46,9 +44,8 @@ namespace AobScan
         /// <param name="procName">The process name to scan.</param>
         /// <param name="scanMethod">The method to use for scanning.</param>
         public AoBScan(string procName, IScanMethod scanMethod)
+            : this(new Process(procName), scanMethod)
         {
-            ProcessHandle = new Process(procName).ProcessHandle;
-            _scanMethod = scanMethod;
         }
 
         /// <summary>
@@ -56,11 +53,9 @@ namespace AobScan
         /// </summary>
         /// <param name="procName">The process name to scan.</param>
         public AoBScan(string procName)
+            : this(new Process(procName), GetScanMethod())
         {
-            ProcessHandle = new Process(procName).ProcessHandle;
-            _scanMethod = GetScanMethod();
         }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process and scanning method.
@@ -68,26 +63,24 @@ namespace AobScan
         /// <param name="processID">The process ID to scan.</param>
         /// <param name="scanMethod">The method to use for scanning.</param>
         public AoBScan(int processID, IScanMethod scanMethod)
+            : this(new Process(processID), scanMethod)
         {
-            ProcessHandle = new Process(processID).ProcessHandle;
-            _scanMethod = scanMethod;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
-        /// <param name="procName">The process name to scan.</param>
+        /// <param name="processID">The process ID to scan.</param>
         public AoBScan(int processID)
+            : this(new Process(processID), GetScanMethod())
         {
-            ProcessHandle = new Process(processID).ProcessHandle;
-            _scanMethod = GetScanMethod();
         }
 
         /// <summary>
         /// Determines the appropriate scan method based on the processor's capabilities.
         /// </summary>
         /// <returns>An instance of <see cref="IScanMethod"/>.</returns>
-        private IScanMethod GetScanMethod()
+        private static IScanMethod GetScanMethod()
         {
             if (Avx2.IsSupported)
                 return new Avx2ScanMethod();
