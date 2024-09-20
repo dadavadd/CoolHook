@@ -52,6 +52,11 @@ For detailed information about the functionality and usage of the AobScan librar
 - [Writing Memory](docs/writing.md): Detailed documentation on how to write to memory in a process using the library.🍕
 
 
+### DLL Injector
+The library has a function for injecting your DLL into the process. Documentation:
+
+- [How it work](docs/injectdll.md)
+
 ### HookManager🔍
 
 The `HookManager` class manages the creation, removal, and retrieval of method hooks.
