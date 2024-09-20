@@ -23,6 +23,7 @@ namespace ProcessHandler
 
             ProcessName = processName;
             ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, true, GetProcessID());
+            CurrentProcess = GetProcess();
         }
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace ProcessHandler
                 throw new ArgumentException("Process ID is null.");
 
             ProcessHandle = OpenProcess_SafeHandle(PROCESS_ACCESS_RIGHTS.PROCESS_ALL_ACCESS, true, (uint)processID);
+            CurrentProcess = GetProcess();
         }
 
         /// <summary>
@@ -48,18 +50,34 @@ namespace ProcessHandler
         public SafeHandle ProcessHandle { get; }
 
         /// <summary>
+        /// Get the current process with class System.Diagnostics.Process.
+        /// </summary>
+        public System.Diagnostics.Process CurrentProcess { get; }
+
+        /// <summary>
         /// Retrieves the process ID for the process with the specified name.
         /// </summary>
         /// <returns>The process ID of the specified process.</returns>
         private uint GetProcessID()
         {
-            string procName = ProcessName.Replace(".exe", "");
-            var process = System.Diagnostics.Process.GetProcessesByName(procName)[0];
+            var process = GetProcess();
 
             if (process == null)
                 throw new NullReferenceException("Process class is null");
 
             return (uint)process.Id;
+        }
+
+        /// <summary>
+        /// Method for get the process by name. 
+        /// </summary>
+        /// <returns>process class with System.Diagnostics.Process type.</returns>
+        private System.Diagnostics.Process GetProcess()
+        {
+            string procName = ProcessName.Replace(".exe", "");
+            var process = System.Diagnostics.Process.GetProcessesByName(procName)[0];
+
+            return process;
         }
     }
 }

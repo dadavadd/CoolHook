@@ -4,3 +4,12 @@ WriteProcessMemory
 ReadProcessMemory
 MEMORY_BASIC_INFORMATION
 VirtualQueryEx
+
+GetModuleHandle
+GetProcAddress
+
+VirtualAllocEx
+LoadLibrary
+CreateRemoteThread
+WaitForSingleObject
+VirtualFreeEx

@@ -115,8 +115,6 @@ namespace CoolHook.Hooking
         /// <param name="methodType">The type of methods to retrieve hooks for.</param>
         /// <returns>A list of hooks associated with the specified method type.</returns>
         public List<Hook> GetHooksForMethodType(Type methodType)
-        {
-            return _hooks.FindAll(h => methodType.IsAssignableFrom(h.BaseMethod.DeclaringType));
-        }
+            => _hooks.FindAll(h => methodType.IsAssignableFrom(h.BaseMethod.DeclaringType));
     }
 }

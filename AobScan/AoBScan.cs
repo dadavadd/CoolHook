@@ -34,7 +34,8 @@ namespace AobScan
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
         /// <param name="process">The process to scan.</param>
-        public AoBScan(Process process) : this(process, GetScanMethod())
+        public AoBScan(Process process)
+            : this(process, GetScanMethod())
         {
         }
 
