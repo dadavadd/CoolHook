@@ -11,7 +11,7 @@ namespace CoolHook.Hooking
     /// <summary>
     /// Represents a single method hook.
     /// </summary>
-    public unsafe class Hook
+    public unsafe class Hook : IHook
     {
         public MethodBase BaseMethod { get; internal set; } // The method being hooked
         public IntPtr BaseMethodPointer { get; internal set; } // Pointer to the base method
@@ -113,7 +113,7 @@ namespace CoolHook.Hooking
         /// <summary>
         /// Applies the hook by modifying the base method's instructions.
         /// </summary>
-        private void SetHook()
+        public void SetHook()
         {
             Marshal.Copy(BaseMethodPointer, _origInstr, 0, _hookInstr.Length);
 

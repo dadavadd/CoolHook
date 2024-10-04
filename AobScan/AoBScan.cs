@@ -6,6 +6,7 @@ using AobScan.ScanMethods;
 using ProcessHandler;
 
 using static Windows.Win32.PInvoke;
+using CoolHook.Memory;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
 namespace AobScan
@@ -13,7 +14,7 @@ namespace AobScan
     /// <summary>
     /// Performs an array of bytes (AoB) scan within a process's memory.
     /// </summary>
-    public unsafe class AoBScan
+    public unsafe class AoBScan : IMemoryProcessHandle
     {
         private IScanMethod _scanMethod;
 

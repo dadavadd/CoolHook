@@ -5,10 +5,10 @@ namespace CoolHook.Hooking
     /// <summary>
     /// Manages the creation, removal, and retrieval of method hooks.
     /// </summary>
-    public class HookManager
+    public class HookManager : IHookManager
     {
-        private static readonly List<Hook> _hooks = new List<Hook>(); // List to store all hooks
-        private static readonly Dictionary<string, Hook> _namedHooks = new Dictionary<string, Hook>(); // Dictionary to store named hooks
+        private static readonly List<IHook> _hooks = new List<IHook>(); // List to store all hooks
+        private static readonly Dictionary<string, IHook> _namedHooks = new Dictionary<string, IHook>(); // Dictionary to store named hooks
 
         /// <summary>
         /// Gets the count of currently enabled hooks.
@@ -22,7 +22,7 @@ namespace CoolHook.Hooking
         /// <param name="hookedMethod">The method to hook to.</param>
         /// <param name="name">Optional name for the hook.</param>
         /// <returns>The created hook.</returns>
-        public Hook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null)
+        public IHook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null)
         {
             var hook = new Hook(methodBase, hookedMethod);
             _hooks.Add(hook);
@@ -49,7 +49,7 @@ namespace CoolHook.Hooking
         /// Removes a specific hook.
         /// </summary>
         /// <param name="hook">The hook to remove.</param>
-        public void RemoveHook(Hook hook)
+        public void RemoveHook(IHook hook)
         {
             if (_hooks.Contains(hook))
             {
@@ -73,7 +73,7 @@ namespace CoolHook.Hooking
         /// </summary>
         /// <param name="name">The name of the hook.</param>
         /// <returns>The hook if found; otherwise, null.</returns>
-        public Hook GetHookByName(string name)
+        public IHook GetHookByName(string name)
         {
             _namedHooks.TryGetValue(name, out var hook);
             return hook;
@@ -114,7 +114,7 @@ namespace CoolHook.Hooking
         /// </summary>
         /// <param name="methodType">The type of methods to retrieve hooks for.</param>
         /// <returns>A list of hooks associated with the specified method type.</returns>
-        public List<Hook> GetHooksForMethodType(Type methodType)
+        public List<IHook> GetHooksForMethodType(Type methodType)
             => _hooks.FindAll(h => methodType.IsAssignableFrom(h.BaseMethod.DeclaringType));
     }
 }

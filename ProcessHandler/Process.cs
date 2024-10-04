@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 
 using static Windows.Win32.PInvoke;
+using CoolHook.Memory;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
 namespace ProcessHandler
@@ -9,7 +10,7 @@ namespace ProcessHandler
     /// <summary>
     /// Represents a process in the system and provides functionality to interact with it.
     /// </summary>
-    public class Process
+    public class Process : IMemoryProcessHandle
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Process"/> class with the specified process name.

@@ -4,7 +4,7 @@ using static Windows.Win32.PInvoke;
 using AobScan;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
-namespace Memory
+namespace CoolHook.Memory
 {
     /// <summary>
     /// Provides extension methods for writing memory to a process.
@@ -15,27 +15,13 @@ namespace Memory
         /// Writes a value of type <typeparamref name="T"/> to the specified memory address in the given process.
         /// </summary>
         /// <typeparam name="T">The type of the value to write.</typeparam>
-        /// <param name="process">The process class to which to write the memory.</param>
+        /// <param name="process">The process interface to which to write the memory.</param>
         /// <param name="address">The address to which to write the value.</param>
         /// <param name="data">The value to write to the memory address.</param>
-        public static void WriteMemory<T>(this Process process, nint address, T data)
+        public static void WriteMemory<T>(this IMemoryProcessHandle process, nint address, T data)
         {
             byte[] buffer = GetBytes(data, out uint size);
             Patch((HANDLE)process.ProcessHandle.DangerousGetHandle(), address, buffer, size);
-        }
-
-
-        /// <summary>
-        /// Writes a value of type <typeparamref name="T"/> to the specified memory address in the given process.
-        /// </summary>
-        /// <typeparam name="T">The type of the value to write.</typeparam>
-        /// <param name="aobscan">The aobscan class to which to write the memory.</param>
-        /// <param name="address">The address to which to write the value.</param>
-        /// <param name="data">The value to write to the memory address.</param>
-        public static void WriteMemory<T>(this AoBScan aobscan, nint address, T data)
-        {
-            byte[] buffer = GetBytes(data, out uint size);
-            Patch((HANDLE)aobscan.ProcessHandle.DangerousGetHandle(), address, buffer, size);
         }
 
         /// <summary>

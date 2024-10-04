@@ -15,12 +15,12 @@ namespace CoolHook.Memory.Injector
         /// <summary>
         /// Injects a DLL into the specified process.
         /// </summary>
-        /// <param name="process">The target process into which the DLL will be injected.</param>
+        /// <param name="process">The target process interface into which the DLL will be injected.</param>
         /// <param name="dllPath">The path to the DLL file to be injected.</param>
         /// <returns>Returns true if the DLL injection is successful, otherwise false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if the process is null.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified DLL file is not found.</exception>
-        public static bool InjectDLL(Process process, string dllPath)
+        public static bool InjectDLL(IMemoryProcessHandle process, string dllPath)
         {
             if (process == null)
                 throw new ArgumentNullException(nameof(process));
