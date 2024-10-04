@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using CoolHook.Logger;
+using System.Reflection;
 
 namespace CoolHook.Hooking
 {
@@ -22,9 +23,9 @@ namespace CoolHook.Hooking
         /// <param name="hookedMethod">The method to hook to.</param>
         /// <param name="name">Optional name for the hook.</param>
         /// <returns>The created hook.</returns>
-        public IHook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null)
+        public IHook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null, ILogger logger = null)
         {
-            var hook = new Hook(methodBase, hookedMethod);
+            var hook = new Hook(methodBase, hookedMethod, logger);
             _hooks.Add(hook);
 
             if (name != null)

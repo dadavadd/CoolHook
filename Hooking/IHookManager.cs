@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using CoolHook.Logger;
+using System.Reflection;
 
 
 namespace CoolHook.Hooking
@@ -6,7 +7,7 @@ namespace CoolHook.Hooking
     public interface IHookManager
     {
         int EnabledHooks { get; }
-        IHook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null);
+        IHook CreateHook(MethodBase methodBase, MethodBase hookedMethod, string name = null, ILogger logger = null);
         void RemoveAllHooks();
         void RemoveHook(IHook hook);
         IHook GetHookByName(string name);

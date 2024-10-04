@@ -1,7 +1,6 @@
 ﻿using Windows.Win32.Foundation;
-using ProcessHandler;
 using static Windows.Win32.PInvoke;
-using AobScan;
+using CoolHook.Logger;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
 namespace CoolHook.Memory
@@ -18,10 +17,29 @@ namespace CoolHook.Memory
         /// <param name="process">The process interface to which to write the memory.</param>
         /// <param name="address">The address to which to write the value.</param>
         /// <param name="data">The value to write to the memory address.</param>
-        public static void WriteMemory<T>(this IMemoryProcessHandle process, nint address, T data)
+        public static void WriteMemory<T>(this IMemoryProcessHandle process, nint address, T data, ILogger logger = null)
         {
-            byte[] buffer = GetBytes(data, out uint size);
-            Patch((HANDLE)process.ProcessHandle.DangerousGetHandle(), address, buffer, size);
+            logger?.Log($"Attempting to write memory at address: {address.ToString("X")}, Type: {typeof(T).Name}");
+
+            try
+            {
+                byte[] buffer = GetBytes(data, out uint size, logger);
+                var result = Patch((HANDLE)process.ProcessHandle.DangerousGetHandle(), address, buffer, size, logger);
+
+                if (result)
+                {
+                    logger?.Log($"Successfully wrote {size} bytes to address: {address.ToString("X")}");
+                }
+                else
+                {
+                    logger?.LogError($"Failed to write memory at address: {address.ToString("X")}");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Error writing memory at address: {address.ToString("X")}, Error: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -32,7 +50,7 @@ namespace CoolHook.Memory
         /// <param name="size">The size of the resulting byte array.</param>
         /// <returns>A byte array representing the data.</returns>
         /// <exception cref="ArgumentException">Thrown if the data type is not supported.</exception>
-        private static byte[] GetBytes<T>(T data, out uint size)
+        private static byte[] GetBytes<T>(T data, out uint size, ILogger logger = null)
         {
             byte[] buffer;
 
@@ -41,20 +59,25 @@ namespace CoolHook.Memory
                 case int integer:
                     buffer = BitConverter.GetBytes(integer);
                     size = sizeof(int);
+                    logger?.Log($"Converting int to bytes, Size: {size}");
                     break;
                 case long longer:
                     buffer = BitConverter.GetBytes(longer);
                     size = sizeof(long);
+                    logger?.Log($"Converting long to bytes, Size: {size}");
                     break;
                 case double doubler:
                     buffer = BitConverter.GetBytes(doubler);
                     size = sizeof(double);
+                    logger?.Log($"Converting double to bytes, Size: {size}");
                     break;
                 case byte[] bytes:
                     buffer = bytes;
                     size = (uint)buffer.Length;
+                    logger?.Log($"Converting byte array to bytes, Size: {size}");
                     break;
                 default:
+                    logger?.LogError("Unsupported data type encountered.");
                     throw new ArgumentException("Unsupported data type.");
             }
 
@@ -69,11 +92,18 @@ namespace CoolHook.Memory
         /// <param name="newBytes">The byte array to write.</param>
         /// <param name="size">The size of the byte array.</param>
         /// <returns>A <see cref="BOOL"/> indicating success or failure.</returns>
-        private static BOOL Patch(HANDLE handle, nint address, byte[] newBytes, uint size)
+        private static BOOL Patch(HANDLE handle, nint address, byte[] newBytes, uint size, ILogger logger = null)
         {
+            logger?.Log($"Patching memory at address: {address.ToString("X")}, Size: {size} bytes");
+
             fixed (byte* ptr = newBytes)
             {
-                return WriteProcessMemory(handle, address.ToPointer(), ptr, size);
+                BOOL result = WriteProcessMemory(handle, address.ToPointer(), ptr, size);
+                if (!result)
+                {
+                    logger?.LogError($"Failed to patch memory at address: {address.ToString("X")}");
+                }
+                return result;
             }
         }
     }

@@ -7,6 +7,7 @@ using ProcessHandler;
 
 using static Windows.Win32.PInvoke;
 using CoolHook.Memory;
+using CoolHook.Logger;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
 namespace AobScan
@@ -16,7 +17,8 @@ namespace AobScan
     /// </summary>
     public unsafe class AoBScan : IMemoryProcessHandle
     {
-        private IScanMethod _scanMethod;
+        private readonly IScanMethod _scanMethod;
+        private readonly ILogger _logger;
 
         public SafeHandle ProcessHandle { get; }
 
@@ -25,18 +27,20 @@ namespace AobScan
         /// </summary>
         /// <param name="process">The process to scan.</param>
         /// <param name="scanMethod">The method to use for scanning.</param>
-        public AoBScan(Process process, IScanMethod scanMethod)
+        public AoBScan(Process process, IScanMethod scanMethod, ILogger logger = null)
         {
             ProcessHandle = process.ProcessHandle;
             _scanMethod = scanMethod;
+            _logger = logger;
+            _logger?.Log($"AoBScan initialized for process: {process.CurrentProcess.ProcessName}");
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
         /// <param name="process">The process to scan.</param>
-        public AoBScan(Process process)
-            : this(process, GetScanMethod())
+        public AoBScan(Process process, ILogger logger = null)
+            : this(process, GetScanMethod(), logger)
         {
         }
 
@@ -45,8 +49,8 @@ namespace AobScan
         /// </summary>
         /// <param name="procName">The process name to scan.</param>
         /// <param name="scanMethod">The method to use for scanning.</param>
-        public AoBScan(string procName, IScanMethod scanMethod)
-            : this(new Process(procName), scanMethod)
+        public AoBScan(string procName, IScanMethod scanMethod, ILogger logger = null)
+            : this(new Process(procName), scanMethod, logger)
         {
         }
 
@@ -54,8 +58,8 @@ namespace AobScan
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
         /// <param name="procName">The process name to scan.</param>
-        public AoBScan(string procName)
-            : this(new Process(procName), GetScanMethod())
+        public AoBScan(string procName, ILogger logger = null)
+            : this(new Process(procName), GetScanMethod(), logger)
         {
         }
 
@@ -64,8 +68,8 @@ namespace AobScan
         /// </summary>
         /// <param name="processID">The process ID to scan.</param>
         /// <param name="scanMethod">The method to use for scanning.</param>
-        public AoBScan(int processID, IScanMethod scanMethod)
-            : this(new Process(processID), scanMethod)
+        public AoBScan(int processID, IScanMethod scanMethod, ILogger logger = null)
+            : this(new Process(processID), scanMethod, logger)
         {
         }
 
@@ -73,8 +77,8 @@ namespace AobScan
         /// Initializes a new instance of the <see cref="AoBScan"/> class with a specified process, using an automatic scan method selection.
         /// </summary>
         /// <param name="processID">The process ID to scan.</param>
-        public AoBScan(int processID)
-            : this(new Process(processID), GetScanMethod())
+        public AoBScan(int processID, ILogger logger = null)
+            : this(new Process(processID), GetScanMethod(), logger)
         {
         }
 
@@ -104,9 +108,36 @@ namespace AobScan
         /// <returns>A task that represents the asynchronous operation. The task result contains a list of addresses where the pattern was found.</returns>
         public Task<List<IntPtr>> AobScan(string pattern, bool readable, bool writable, bool executable, long startAddr, long endAddr)
         {
+            _logger?.Log($"Starting AoBScan with pattern: {pattern}, Range: {startAddr:X}-{endAddr:X}");
+
             var (aobPattern, mask) = PreparePatternAndMask(pattern);
             var memoryRegions = GetMemoryRegions(startAddr, endAddr, readable, writable, executable);
-            var results = new ConcurrentBag<IntPtr>();
+            return ScanAllMemoryRegions(memoryRegions, aobPattern, mask);
+        }
+
+
+        /// <summary>
+        /// The original AobScan method overloading without executable, writable and readable parameters.
+        /// </summary>
+        /// <param name="pattern">The pattern to search for.</param>
+        /// <param name="startAddr">The starting address of the memory range to scan.</param>
+        /// <param name="endAddr">The ending address of the memory range to scan.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of addresses where the pattern was found.</returns>
+        public Task<List<IntPtr>> AobScan(string pattern, long startAddr = 0x0000000000010000, long endAddr = 0x00007ffffffeffff)
+        {
+            return AobScan(pattern, true, true, true, startAddr, endAddr);
+        }
+
+        public Task<List<IntPtr>> AobScan(string pattern, bool readable, bool writable = true, long startAddr = 0x0000000000010000, long endAddr = 0x00007ffffffeffff)
+        {
+            return AobScan(pattern, readable, writable, true, startAddr, endAddr);
+        }
+
+        private unsafe Task<List<IntPtr>> ScanAllMemoryRegions(List<MemoryRegion> memoryRegions, byte[] aobPattern, byte[] mask)
+        {
+            _logger?.Log("Scanning all memory regions...");
+
+            ConcurrentBag<IntPtr> results = new ConcurrentBag<IntPtr>();
 
             return Task.Run(() =>
             {
@@ -119,27 +150,15 @@ namespace AobScan
                         if (ReadProcessMemory(ProcessHandle, region.BaseAddress.ToPointer(), ptr, (uint)region.RegionSize, &bytesRead))
                         {
                             var matches = ScanRegion(buffer, aobPattern, mask);
-
                             foreach (var offset in matches)
                                 results.Add(region.BaseAddress + offset);
                         }
                     }
                 });
 
+                _logger?.Log($"Memory scan completed with {results.Count} matches.");
                 return results.ToList();
             });
-        }
-
-        /// <summary>
-        /// The original AobScan method overloading without executable, writable and readable parameters.
-        /// </summary>
-        /// <param name="pattern">The pattern to search for.</param>
-        /// <param name="startAddr">The starting address of the memory range to scan.</param>
-        /// <param name="endAddr">The ending address of the memory range to scan.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of addresses where the pattern was found.</returns>
-        public Task<List<IntPtr>> AobScan(string pattern, long startAddr = 0x0000000000010000, long endAddr = 0x00007ffffffeffff)
-        {
-            return AobScan(pattern, true, true, true, startAddr, endAddr);
         }
 
         /// <summary>
@@ -165,6 +184,8 @@ namespace AobScan
                     pattern[i] = Convert.ToByte(parts[i], 16);
                 }
             }
+
+            _logger?.Log("Pattern and mask prepared.");
             return (pattern, mask);
         }
 
@@ -179,26 +200,35 @@ namespace AobScan
         /// <returns>A list of <see cref="MemoryRegion"/> objects representing the memory regions.</returns>
         private List<MemoryRegion> GetMemoryRegions(long startAddr, long endAddr, bool readable, bool writable, bool executable)
         {
+            _logger?.Log($"Retrieving memory regions in range: {startAddr:X}-{endAddr:X}, Readable: {readable}, Writable: {writable}, Executable: {executable}");
             var regions = new List<MemoryRegion>();
             var address = new IntPtr(startAddr);
-
             while (address.ToInt64() < endAddr)
             {
                 MEMORY_BASIC_INFORMATION memInfo = default;
+                if (VirtualQueryEx(ProcessHandle, address.ToPointer(), out memInfo, (uint)sizeof(MEMORY_BASIC_INFORMATION)) == 0)
+                {
+                    _logger?.LogError($"VirtualQueryEx failed at address: {address.ToInt64():X}");
+                    break;
+                }
+                _logger?.Log($"Region found: BaseAddress = {new IntPtr(memInfo.BaseAddress):X}, RegionSize = {memInfo.RegionSize}, State = {memInfo.State}, Protect = {memInfo.Protect}");
 
-                if (VirtualQueryEx(ProcessHandle, address.ToPointer(), out memInfo, (uint)sizeof(MEMORY_BASIC_INFORMATION)) == 0) break;
+                bool isReadable = (memInfo.Protect & (PAGE_PROTECTION_FLAGS.PAGE_READONLY |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_READWRITE |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_WRITECOPY |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READ |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_WRITECOPY)) != 0;
 
-                bool isReadable = (memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_READONLY) > 0;
+                bool isWritable = (memInfo.Protect & (PAGE_PROTECTION_FLAGS.PAGE_READWRITE |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_WRITECOPY |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE |
+                                                      PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_WRITECOPY)) != 0;
 
-                bool isWritable = ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_READWRITE) > 0) ||
-                                  ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_WRITECOPY) > 0) ||
-                                  ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE) > 0) ||
-                                  ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_WRITECOPY) > 0);
-
-                bool isExecutable = ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE) > 0) ||
-                                    ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READ) > 0) ||
-                                    ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE) > 0) ||
-                                    ((memInfo.Protect & PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_WRITECOPY) > 0);
+                bool isExecutable = (memInfo.Protect & (PAGE_PROTECTION_FLAGS.PAGE_EXECUTE |
+                                                        PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READ |
+                                                        PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE |
+                                                        PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_WRITECOPY)) != 0;
 
                 if (memInfo.State == VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT &&
                     (!readable || isReadable) &&
@@ -207,10 +237,9 @@ namespace AobScan
                 {
                     regions.Add(new MemoryRegion(new IntPtr(memInfo.BaseAddress), (int)memInfo.RegionSize));
                 }
-
                 address = (IntPtr)memInfo.BaseAddress + (IntPtr)memInfo.RegionSize;
             }
-
+            _logger?.Log($"Memory regions retrieval completed. {regions.Count} regions found.");
             return regions;
         }
 
@@ -223,8 +252,11 @@ namespace AobScan
         /// <returns>A list of offsets where the pattern was found within the memory buffer.</returns>
         private List<int> ScanRegion(byte[] memory, byte[] pattern, byte[] mask)
         {
+            _logger?.Log($"{_scanMethod.GetType().FullName} scanning region.");
+
             var matches = new List<int>();
             _scanMethod.ScanRegion(memory, pattern, mask, matches);
+            _logger?.Log($"ScanRegion completed. Matches found: {matches.Count}");
             return matches;
         }
     }

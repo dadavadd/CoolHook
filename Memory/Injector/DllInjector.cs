@@ -3,6 +3,7 @@ using Windows.Win32.System.Memory;
 using System.Runtime.InteropServices;
 using ProcessHandler;
 using static Windows.Win32.PInvoke;
+using CoolHook.Logger;
 
 #pragma warning disable CA1416 // Checks for platform compatibility
 namespace CoolHook.Memory.Injector
@@ -17,46 +18,95 @@ namespace CoolHook.Memory.Injector
         /// </summary>
         /// <param name="process">The target process interface into which the DLL will be injected.</param>
         /// <param name="dllPath">The path to the DLL file to be injected.</param>
+        /// <param name="logger">The ILogger interface for logging any happened in code.</param>
         /// <returns>Returns true if the DLL injection is successful, otherwise false.</returns>
         /// <exception cref="ArgumentNullException">Thrown if the process is null.</exception>
         /// <exception cref="FileNotFoundException">Thrown if the specified DLL file is not found.</exception>
-        public static bool InjectDLL(IMemoryProcessHandle process, string dllPath)
+        public static bool InjectDLL(IMemoryProcessHandle process, string dllPath, ILogger logger = null)
         {
+            logger?.Log($"Attempting to inject DLL: {dllPath}");
+
             if (process == null)
-                throw new ArgumentNullException(nameof(process));
-            if (!File.Exists(dllPath))
-                throw new FileNotFoundException(nameof(dllPath));
-
-            byte[] dllData = File.ReadAllBytes(dllPath);
-
-            void* allocatedMemory = VirtualAllocEx(
-                process.ProcessHandle,
-                null,
-                (nuint)dllPath.Length,
-                VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
-                PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
-
-            fixed (void* ptr = dllData)
-                WriteProcessMemory(process.ProcessHandle, allocatedMemory, ptr, (nuint)dllData.Length, null);
-
-            var remoteThread = CreateRemoteThread(process.ProcessHandle, null, 0, LoadLibraryA, allocatedMemory, 0, null);
-
-            var waitEvent = WaitForSingleObject(remoteThread, 10000);
-
-            if (waitEvent == WAIT_EVENT.WAIT_ABANDONED || waitEvent == WAIT_EVENT.WAIT_TIMEOUT)
             {
-                if (remoteThread != null)
-                    CloseHandle((HANDLE)remoteThread.DangerousGetHandle());
-
-                return false;
+                logger?.LogError("Process handle is null.");
+                throw new ArgumentNullException(nameof(process));
             }
 
-            VirtualFreeEx(process.ProcessHandle, allocatedMemory, 0, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+            if (!File.Exists(dllPath))
+            {
+                logger?.LogError($"DLL file not found: {dllPath}");
+                throw new FileNotFoundException(nameof(dllPath));
+            }
 
-            if (remoteThread != null)
-                CloseHandle((HANDLE)remoteThread.DangerousGetHandle());
+            try
+            {
+                byte[] dllData = File.ReadAllBytes(dllPath);
+                logger?.Log($"Read DLL data from path: {dllPath}, Size: {dllData.Length} bytes");
 
-            return true;
+                void* allocatedMemory = VirtualAllocEx(
+                    process.ProcessHandle,
+                    null,
+                    (nuint)dllPath.Length,
+                    VIRTUAL_ALLOCATION_TYPE.MEM_COMMIT | VIRTUAL_ALLOCATION_TYPE.MEM_RESERVE,
+                    PAGE_PROTECTION_FLAGS.PAGE_EXECUTE_READWRITE);
+
+                if (allocatedMemory == null)
+                {
+                    logger?.LogError("Failed to allocate memory in target process.");
+                    return false;
+                }
+
+                logger?.Log($"Allocated memory in target process at address: {((nint)allocatedMemory).ToString("X")}");
+
+                fixed (void* ptr = dllData)
+                {
+                    if (!WriteProcessMemory(process.ProcessHandle, allocatedMemory, ptr, (nuint)dllData.Length, null))
+                    {
+                        logger?.LogError("Failed to write DLL data to target process memory.");
+                        return false;
+                    }
+                }
+
+                logger?.Log("DLL data successfully written to target process memory.");
+
+                var remoteThread = CreateRemoteThread(process.ProcessHandle, null, 0, LoadLibraryA, allocatedMemory, 0, null);
+                if (remoteThread == null)
+                {
+                    logger?.LogError("Failed to create remote thread in target process.");
+                    return false;
+                }
+
+                logger?.Log($"Remote thread created in target process. Handle: {remoteThread.DangerousGetHandle().ToInt64():X}");
+
+                var waitEvent = WaitForSingleObject(remoteThread, 10000);
+
+                if (waitEvent == WAIT_EVENT.WAIT_ABANDONED || waitEvent == WAIT_EVENT.WAIT_TIMEOUT)
+                {
+                    logger?.LogError("Remote thread wait timed out or was abandoned.");
+
+                    if (remoteThread != null)
+                        CloseHandle((HANDLE)remoteThread.DangerousGetHandle());
+
+                    return false;
+                }
+
+                VirtualFreeEx(process.ProcessHandle, allocatedMemory, 0, VIRTUAL_FREE_TYPE.MEM_RELEASE);
+                logger?.Log($"Memory at address {((nint)allocatedMemory).ToString("X")} has been released.");
+
+                if (remoteThread != null)
+                {
+                    CloseHandle((HANDLE)remoteThread.DangerousGetHandle());
+                    logger?.Log("Remote thread handle closed.");
+                }
+
+                logger?.Log("DLL injection completed successfully.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError($"Error during DLL injection: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
